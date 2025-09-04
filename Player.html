@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Player</title>
+</head>
+<body>
+  <h1>หน้า Player</h1>
+  <button onclick="useSkill('Player1', 'ยิง')">ใช้สกิล ยิง</button>
+  <button onclick="useSkill('Player2', 'รักษา')">ใช้สกิล รักษา</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDpepV_svPw8G1OTPRA2lDrR529_ldqO2g",
+      authDomain: "were-c782f.firebaseapp.com",
+      databaseURL: "https://were-c782f-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "were-c782f",
+      storageBucket: "were-c782f.firebasestorage.app",
+      messagingSenderId: "929279875762",
+      appId: "1:929279875762:web:e8d750ec3ecd42dc3cc7ab",
+      measurementId: "G-K89EPKWK2S"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // ฟังก์ชันส่งข้อมูลไป Firebase
+    window.useSkill = function(player, skill) {
+      push(ref(db, "actions"), {
+        player: player,
+        skill: skill,
+        time: Date.now()
+      });
+      alert(`✅ คุณใช้สกิล ${skill} แล้ว`);
+    }
+  </script>
+</body>
+</html>
