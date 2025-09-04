@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Werewolf Game Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f0f23);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d, #6bcf7f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .menu-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 2px solid transparent;
+        }
+
+        .menu-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .menu-card.player {
+            border-color: #4ecdc4;
+        }
+
+        .menu-card.admin {
+            border-color: #ff6b6b;
+        }
+
+        .menu-card h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .menu-card.player h2 {
+            color: #4ecdc4;
+        }
+
+        .menu-card.admin h2 {
+            color: #ff6b6b;
+        }
+
+        .menu-card p {
+            font-size: 1.1em;
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        .player-view, .admin-view {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .input-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .player-input {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .player-input input {
+            padding: 15px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            min-width: 250px;
+            text-align: center;
+        }
+
+        .player-input input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .ability-section {
+            text-align: center;
+            margin: 40px 0;
+            display: none;
+        }
+
+        .ability-section.active {
+            display: block;
+        }
+
+        .ability-section h2 {
+            color: #4ecdc4;
+            margin-bottom: 20px;
+            font-size: 2.2em;
+        }
+
+        .ability-btn {
+            background: linear-gradient(45deg, #ffd93d, #ff9a56);
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            min-width: 200px;
+            box-shadow: 0 5px 15px rgba(255, 217, 61, 0.3);
+        }
+
+        .ability-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 217, 61, 0.5);
+        }
+
+        .ability-btn:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .admin-panel {
+            background: rgba(255, 107, 107, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .admin-panel h2 {
+            color: #ff6b6b;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .notification {
+            background: rgba(78, 205, 196, 0.2);
+            border: 1px solid #4ecdc4;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .notification.new {
+            background: rgba(255, 217, 61, 0.3);
+            border-color: #ffd93d;
+            box-shadow: 0 0 20px rgba(255, 217, 61, 0.5);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .player-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .player-name {
+            font-size: 1.8em;
+            color: #4ecdc4;
+            margin-bottom: 10px;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .admin-password {
+            background: rgba(255, 107, 107, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .admin-password input {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            margin: 10px;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            opacity: 0.7;
+            padding: 40px;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 217, 61, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 217, 61, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 217, 61, 0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .menu-card {
+                padding: 30px 20px;
+            }
+            
+            .player-input {
+                flex-direction: column;
+            }
+            
+            .player-input input {
+                min-width: 200px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main Menu -->
+        <div id="mainMenu">
+            <div class="header">
+                <h1>🐺 Werewolf Game</h1>
+                <p>เกมหมาป่าออนไลน์สำหรับเล่นกับเพื่อน</p>
+            </div>
+
+            <div class="main-menu">
+                <div class="menu-card player" onclick="showPlayerJoin()">
+                    <h2>👥 เข้าร่วมเกม</h2>
+                    <p>สำหรับผู้เล่นที่ต้องการเข้าร่วมเกมหมาป่า<br>
+                    ใส่ชื่อและเล่นได้เลย!</p>
+                </div>
+
+                <div class="menu-card admin" onclick="showAdminLogin()">
+                    <h2>🎮 แอดมิน</h2>
+                    <p>สำหรับผู้ดำเนินเกม (GM)<br>
+                    ดูการใช้ความสามารถของผู้เล่นทุกคน</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Join -->
+        <div id="playerJoin" class="player-view">
+            <button class="back-btn" onclick="backToMenu()">← กลับ</button>
+            
+            <div class="input-section">
+                <h2>👥 เข้าร่วมเกม</h2>
+                <p style="margin-bottom: 30px;">ใส่ชื่อของคุณเพื่อเข้าร่วมเกม</p>
+                
+                <div class="player-input">
+                    <input type="text" id="playerName" placeholder="ใส่ชื่อของคุณ" maxlength="20">
+                    <button class="btn btn-primary" onclick="joinGame()">เข้าร่วมเกม</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Game View -->
+        <div id="playerGame" class="player-view">
+            <button class="back-btn" onclick="leaveGame()">← ออกจากเกม</button>
+            
+            <div class="player-info">
+                <div class="player-name" id="currentPlayerName"></div>
+                <p>คุณได้เข้าร่วมเกมแล้ว!</p>
+            </div>
+
+            <div class="ability-section active">
+                <h2>🔮 ใช้ความสามารถ</h2>
+                <p style="margin-bottom: 30px;">กดปุ่มด้านล่างเมื่อต้องการใช้ความสามารถ</p>
+                
+                <button class="ability-btn" id="abilityBtn" onclick="useAbility()">
+                    ✨ ใช้ความสามารถ
+                </button>
+                
+                <div id="abilityStatus" style="margin-top: 20px; font-size: 16px; opacity: 0.8;"></div>
+            </div>
+        </div>
+
+        <!-- Admin Login -->
+        <div id="adminLogin" class="admin-view">
+            <button class="back-btn" onclick="backToMenu()">← กลับ</button>
+            
+            <div class="admin-password">
+                <h2>🔐 เข้าสู่ระบบแอดมิน</h2>
+                <p style="margin-bottom: 20px;">ใส่รหัสผ่านแอดมิน</p>
+                
+                <input type="password" id="adminPass" placeholder="รหัสผ่านแอดมิน">
+                <br>
+                <button class="btn btn-danger" onclick="loginAdmin()">เข้าสู่ระบบ</button>
+                
+                <p style="margin-top: 15px; font-size: 14px; opacity: 0.7;">
+                    รหัสผ่านเริ่มต้น: <strong>admin123</strong>
+                </p>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="admin-view">
+            <button class="back-btn" onclick="logoutAdmin()">← ออกจากระบบ</button>
+            
+            <div class="admin-panel">
+                <h2>🎮 แผงควบคุมแอดมิน</h2>
+                
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <button class="btn btn-secondary" onclick="clearNotifications()">ล้างการแจ้งเตือน</button>
+                    <button class="btn btn-primary" onclick="refreshAdmin()">รีเฟรช</button>
+                </div>
+
+                <div id="adminNotifications">
+                    <div class="empty-state">
+                        <h3>🔔 รอการแจ้งเตือน</h3>
+                        <p>เมื่อมีผู้เล่นใช้ความสามารถ จะแสดงการแจ้งเตือนที่นี่</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameData = {
+            players: new Map(),
+            notifications: [],
+            adminPassword: 'admin123'
+        };
+
+        function showPlayerJoin() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('playerJoin').style.display = 'block';
+            document.getElementById('playerName').focus();
+        }
+
+        function showAdminLogin() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('adminLogin').style.display = 'block';
+            document.getElementById('adminPass').focus();
+        }
+
+        function backToMenu() {
+            document.querySelectorAll('.player-view, .admin-view').forEach(view => {
+                view.style.display = 'none';
+            });
+            document.getElementById('mainMenu').style.display = 'block';
+        }
+
+        function joinGame() {
+            const nameInput = document.getElementById('playerName');
+            const playerName = nameInput.value.trim();
+            
+            if (!playerName) {
+                alert('กรุณาใส่ชื่อของคุณ');
+                nameInput.focus();
+                return;
+            }
+
+            if (playerName.length > 20) {
+                alert('ชื่อต้องไม่เกิน 20 ตัวอักษร');
+                return;
+            }
+
+            // Save player data
+            const playerId = Date.now();
+            gameData.players.set(playerId, {
+                id: playerId,
+                name: playerName,
+                joinTime: new Date(),
+                abilityUsed: 0
+            });
+
+            // Store current player in session
+            sessionStorage.setItem('currentPlayer', JSON.stringify({
+                id: playerId,
+                name: playerName
+            }));
+
+            showPlayerGame(playerName);
+        }
+
+        function showPlayerGame(playerName) {
+            document.getElementById('playerJoin').style.display = 'none';
+            document.getElementById('playerGame').style.display = 'block';
+            document.getElementById('currentPlayerName').textContent = playerName;
+            
+            updateAbilityStatus();
+        }
+
+        function leaveGame() {
+            // Remove player from game
+            const currentPlayer = JSON.parse(sessionStorage.getItem('currentPlayer') || '{}');
+            if (currentPlayer.id) {
+                gameData.players.delete(currentPlayer.id);
+            }
+            
+            sessionStorage.removeItem('currentPlayer');
+            backToMenu();
+        }
+
+        function useAbility() {
+            const currentPlayer = JSON.parse(sessionStorage.getItem('currentPlayer') || '{}');
+            if (!currentPlayer.id) {
+                alert('เกิดข้อผิดพลาด กรุณาเข้าร่วมเกมใหม่');
+                return;
+            }
+
+            const player = gameData.players.get(currentPlayer.id);
+            if (!player) {
+                alert('ไม่พบข้อมูลผู้เล่น');
+                return;
+            }
+
+            // Add notification
+            const notification = {
+                id: Date.now(),
+                playerName: player.name,
+                timestamp: new Date(),
+                message: `${player.name} ได้ใช้ความสามารถ`,
+                isNew: true
+            };
+
+            gameData.notifications.unshift(notification);
+            player.abilityUsed++;
+
+            // Update UI
+            updateAbilityStatus();
+            
+            // Add pulse effect
+            const btn = document.getElementById('abilityBtn');
+            btn.classList.add('pulse');
+            btn.textContent = '✅ ใช้ความสามารถแล้ว';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.classList.remove('pulse');
+                btn.textContent = '✨ ใช้ความสามารถ';
+                btn.disabled = false;
+            }, 3000);
+
+            // Play notification sound
+            playNotificationSound();
+        }
+
+        function updateAbilityStatus() {
+            const currentPlayer = JSON.parse(sessionStorage.getItem('currentPlayer') || '{}');
+            const player = gameData.players.get(currentPlayer.id);
+            
+            if (player) {
+                document.getElementById('abilityStatus').textContent = 
+                    `ใช้ความสามารถไปแล้ว: ${player.abilityUsed} ครั้ง`;
+            }
+        }
+
+        function loginAdmin() {
+            const password = document.getElementById('adminPass').value;
+            
+            if (password === gameData.adminPassword) {
+                document.getElementById('adminLogin').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                updateAdminPanel();
+            } else {
+                alert('รหัสผ่านไม่ถูกต้อง');
+                document.getElementById('adminPass').focus();
+            }
+        }
+
+        function logoutAdmin() {
+            document.getElementById('adminPanel').style.display = 'none';
+            backToMenu();
+        }
+
+        function updateAdminPanel() {
+            const container = document.getElementById('adminNotifications');
+            
+            if (gameData.notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>🔔 รอการแจ้งเตือน</h3>
+                        <p>เมื่อมีผู้เล่นใช้ความสามารถ จะแสดงการแจ้งเตือนที่นี่</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = gameData.notifications.map(notification => `
+                <div class="notification ${notification.isNew ? 'new' : ''}">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="font-size: 18px; color: #4ecdc4;">${notification.playerName}</strong>
+                            <p style="margin: 5px 0; font-size: 16px;">${notification.message}</p>
+                            <small style="opacity: 0.7;">${notification.timestamp.toLocaleString('th-TH')}</small>
+                        </div>
+                        <div style="font-size: 30px;">⚡</div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Remove new status after showing
+            setTimeout(() => {
+                gameData.notifications.forEach(n => n.isNew = false);
+            }, 1000);
+        }
+
+        function clearNotifications() {
+            if (confirm('คุณต้องการล้างการแจ้งเตือนทั้งหมด?')) {
+                gameData.notifications = [];
+                updateAdminPanel();
+            }
+        }
+
+        function refreshAdmin() {
+            updateAdminPanel();
+        }
+
+        function playNotificationSound() {
+            try {
+                // Create a simple notification sound
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                oscillator.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gain.gain.setValueAtTime(0, audioContext.currentTime);
+                gain.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (e) {
+                console.log('ไม่สามารถเล่นเสียงแจ้งเตือนได้');
+            }
+        }
+
+        // Auto refresh admin panel every 2 seconds
+        setInterval(() => {
+            if (document.getElementById('adminPanel').style.display === 'block') {
+                updateAdminPanel();
+            }
+        }, 2000);
+
+        // Handle Enter key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                if (document.getElementById('playerJoin').style.display === 'block') {
+                    joinGame();
+                } else if (document.getElementById('adminLogin').style.display === 'block') {
+                    loginAdmin();
+                }
+            }
+        });
+
+        // Initialize
+        document.getElementById('playerName').addEventListener('input', function() {
+            this.value = this.value.substring(0, 20);
+        });
+    </script>
+</body>
+</html>
