@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Game Master</title>
+</head>
+<body>
+  <h1>หน้า GM</h1>
+  <div id="log"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDpepV_svPw8G1OTPRA2lDrR529_ldqO2g",
+      authDomain: "were-c782f.firebaseapp.com",
+      databaseURL: "https://were-c782f-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "were-c782f",
+      storageBucket: "were-c782f.firebasestorage.app",
+      messagingSenderId: "929279875762",
+      appId: "1:929279875762:web:e8d750ec3ecd42dc3cc7ab",
+      measurementId: "G-K89EPKWK2S"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const logDiv = document.getElementById("log");
+
+    // ฟัง action ใหม่
+    onChildAdded(ref(db, "actions"), (snapshot) => {
+      const data = snapshot.val();
+      const msg = `📢 ${data.player} ใช้สกิล: ${data.skill}`;
+      alert(msg); // เด้ง popup
+      logDiv.innerHTML = `<p>${msg}</p>` + logDiv.innerHTML;
+    });
+  </script>
+</body>
+</html>
